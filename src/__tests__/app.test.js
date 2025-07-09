@@ -23,7 +23,7 @@ describe("Api calls", () => {
       success: true,
       data: [
         {
-          title: "Test Project 1",
+          title: "Test Project 12",
           image: "image1.jpg",
           imageUrl: "http://localhost:3111/assets/image1.jpg",
         },
