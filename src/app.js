@@ -1,11 +1,14 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const projects = require("./mock/projects");
+const apiLogger = require("./middleware/apiLogger");
 const cors = require("cors");
 
 const app = express();
+
 app.use(cors());
 app.use(bodyParser.json());
+app.use(apiLogger);
 app.use(express.static("src/public"));
 
 const users = [{ username: "admin", password: "1234" }];
