@@ -1,20 +1,20 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const projects = require("./mock/projects");
+const apiLogger = require("./middleware/apiLogger");
 const cors = require("cors");
 
 const app = express();
-const PORT = 3111;
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(apiLogger);
 app.use(express.static("src/public"));
 
 const users = [{ username: "admin", password: "1234" }];
 
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
-
   const user = users.find(
     (u) => u.username === username && u.password === password
   );
@@ -34,6 +34,7 @@ app.post("/api/login", (req, res) => {
 
 app.get("/api/projects", (req, res) => {
   const { search } = req.query;
+  const PORT = 3111;
 
   let result = projects;
 
@@ -54,6 +55,4 @@ app.get("/api/projects", (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+module.exports = app;
