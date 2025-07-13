@@ -1,8 +1,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const projects = require("./mock/projects");
 const apiLogger = require("./middleware/apiLogger");
 const cors = require("cors");
+const pool = require("./config/db");
+const authController = require("./controllers/authController");
+const authMiddleware = require("./middleware/authMiddleware");
+const projectController = require("./controllers/projectController");
+const { validateUser } = require("./middleware/validationMiddleware");
 
 const app = express();
 
@@ -11,48 +15,25 @@ app.use(bodyParser.json());
 app.use(apiLogger);
 app.use(express.static("src/public"));
 
-const users = [{ username: "admin", password: "1234" }];
+app.post("/api/signup", validateUser, authController.register);
+app.post("/api/login", authController.login);
+app.post(
+  "/api/refresh-token",
+  authMiddleware.verifyRefreshToken,
+  authController.refreshToken
+);
+app.get(
+  "/api/projects",
+  authMiddleware.verifyAccessToken,
+  projectController.getProjects
+);
 
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find(
-    (u) => u.username === username && u.password === password
-  );
-
-  if (user) {
-    res.json({
-      success: true,
-      message: "Authentication successful",
-    });
+pool.query("SELECT NOW()", (err, res) => {
+  if (err) {
+    console.error("Error connecting to the database", err.stack);
   } else {
-    res.status(401).json({
-      success: false,
-      message: "Invalid username or password",
-    });
+    console.log("Connected to the database:", res.rows);
   }
-});
-
-app.get("/api/projects", (req, res) => {
-  const { search } = req.query;
-  const PORT = 3111;
-
-  let result = projects;
-
-  if (search) {
-    result = projects.filter((project) =>
-      project.title.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-
-  const projectsWithImageUrls = result.map((project) => ({
-    ...project,
-    imageUrl: `http://localhost:${PORT}/assets/${project.image}`,
-  }));
-
-  res.json({
-    success: true,
-    data: projectsWithImageUrls,
-  });
 });
 
 module.exports = app;
