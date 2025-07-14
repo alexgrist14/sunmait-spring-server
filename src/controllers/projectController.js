@@ -6,10 +6,14 @@ const projectController = {
       const { search } = req.query;
       const projects = await ProjectModel.getAll(search);
 
-      const projectsWithImageUrls = projects.map((project) => ({
-        ...project,
-        imageUrl: `${req.protocol}://${req.get("host")}/assets/${project.image}`,
-      }));
+      const projectsWithImageUrls = projects.map((project) => {
+        const plain = project.get({ plain: true });
+
+        return {
+          ...plain,
+          imageUrl: `${req.protocol}://${req.get("host")}/assets/${plain.image}`,
+        };
+      });
 
       res.json({
         projects: projectsWithImageUrls,

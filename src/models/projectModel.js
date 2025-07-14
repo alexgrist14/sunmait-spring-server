@@ -1,20 +1,18 @@
-const pool = require("../config/db");
+const { Op } = require("sequelize");
+const Project = require("./project");
 
 const ProjectModel = {
   async getAll(search = "") {
     try {
-      let query = "SELECT * FROM projects";
-      const params = [];
+      const where = search
+        ? {
+            title: {
+              [Op.iLike]: `%${search}%`,
+            },
+          }
+        : {};
 
-      if (search) {
-        query += " WHERE LOWER(title) LIKE $1";
-        params.push(`%${search.toLowerCase()}%`);
-      }
-
-      query += " ORDER BY title";
-
-      const result = await pool.query(query, params);
-      return result.rows;
+      return await Project.findAll({ where, order: [["title", "ASC"]] });
     } catch (error) {
       console.error("Error getting projects:", error);
       throw error;

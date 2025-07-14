@@ -4,80 +4,62 @@ const ProjectModel = require("../models/projectModel");
 
 jest.mock("../models/projectModel");
 
+const mockRequest = (query = {}) => ({
+  query,
+  protocol: "http",
+  get: () => "localhost:3111",
+});
+
 const mockResponse = () => {
   const res = {};
   res.status = jest.fn(() => res);
-  res.json = jest.fn(() => res);
+  res.json = jest.fn();
   return res;
 };
 
-describe("projectControllers", () => {
-  beforeEach(() => {
+describe("projectController.getProjects", () => {
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should return project list with imageUrl", async () => {
-    const req = {
-      query: {},
-      protocol: "http",
-      get: (header) => {
-        if (header === "host") return "localhost:3000";
+  it("should return projects with imageUrl", async () => {
+    ProjectModel.getAll.mockResolvedValue([
+      {
+        get: () => ({
+          id: 1,
+          title: "Spring Boot",
+          image: "spring-boot.svg",
+          description: "desc",
+          created_at: "2025-07-14T13:01:21.491Z",
+        }),
       },
-    };
+    ]);
+
+    const req = mockRequest({ search: "" });
     const res = mockResponse();
-
-    const mockProjects = [
-      { id: 1, title: "Test", image: "img1.jpg" },
-      { id: 2, title: "Demo", image: "img2.png" },
-    ];
-
-    ProjectModel.getAll.mockResolvedValue(mockProjects);
 
     await projectController.getProjects(req, res);
 
-    expect(ProjectModel.getAll).toHaveBeenCalledWith(undefined);
+    expect(ProjectModel.getAll).toHaveBeenCalledWith("");
     expect(res.json).toHaveBeenCalledWith({
       projects: [
         {
           id: 1,
-          title: "Test",
-          image: "img1.jpg",
-          imageUrl: "http://localhost:3000/assets/img1.jpg",
-        },
-        {
-          id: 2,
-          title: "Demo",
-          image: "img2.png",
-          imageUrl: "http://localhost:3000/assets/img2.png",
+          title: "Spring Boot",
+          image: "spring-boot.svg",
+          description: "desc",
+          created_at: "2025-07-14T13:01:21.491Z",
+          imageUrl: "http://localhost:3111/assets/spring-boot.svg",
         },
       ],
     });
   });
 
-  it("should pass search param to ProjectModel", async () => {
-    const req = {
-      query: { search: "data" },
-      protocol: "https",
-      get: () => "sunmait.com",
-    };
-    const res = mockResponse();
-
-    ProjectModel.getAll.mockResolvedValue([]);
-
-    await projectController.getProjects(req, res);
-
-    expect(ProjectModel.getAll).toHaveBeenCalledWith("data");
-  });
-
-  it("should return 500 with any error", async () => {
-    const req = {
-      query: {},
-      protocol: "http",
-      get: () => "localhost",
-    };
-    const res = mockResponse();
-
+  it("should return 500 status code on error", async () => {
     ProjectModel.getAll.mockRejectedValue(new Error("DB error"));
+
+    const req = mockRequest();
+    const res = mockResponse();
 
     await projectController.getProjects(req, res);
 

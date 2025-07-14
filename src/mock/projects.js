@@ -1,4 +1,6 @@
-const projects = [
+const Project = require("../models/project");
+
+const testProjects = [
   {
     title: "Spring Boot",
     image: "spring-boot.svg",
@@ -55,4 +57,15 @@ const projects = [
   },
 ];
 
-module.exports = projects;
+async function initTestData() {
+  try {
+    const count = await Project.count();
+    if (count === 0) {
+      await Project.bulkCreate(testProjects);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+module.exports = initTestData;
