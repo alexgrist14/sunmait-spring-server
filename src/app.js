@@ -2,7 +2,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const apiLogger = require("./middleware/apiLogger");
 const cors = require("cors");
-const pool = require("./config/db");
 const authController = require("./controllers/authController");
 const authMiddleware = require("./middleware/authMiddleware");
 const projectController = require("./controllers/projectController");
@@ -27,13 +26,5 @@ app.get(
   authMiddleware.verifyAccessToken,
   projectController.getProjects
 );
-
-pool.query("SELECT NOW()", (err, res) => {
-  if (err) {
-    console.error("Error connecting to the database", err.stack);
-  } else {
-    console.log("Connected to the database:", res.rows);
-  }
-});
 
 module.exports = app;
