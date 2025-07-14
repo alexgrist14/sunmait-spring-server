@@ -12,8 +12,7 @@ const projectController = {
       }));
 
       res.json({
-        success: true,
-        data: projectsWithImageUrls,
+        projects: projectsWithImageUrls,
       });
     } catch (error) {
       console.error("Error getting projects:", error);

@@ -37,8 +37,7 @@ describe("projectControllers", () => {
 
     expect(ProjectModel.getAll).toHaveBeenCalledWith(undefined);
     expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      data: [
+      projects: [
         {
           id: 1,
           title: "Test",
