@@ -1,4 +1,5 @@
 const sequelize = require("../config/sequelize");
+const CompanyNotFoundError = require("../errors/CompanyNotFoundError");
 const Company = require("../models/company");
 const Task = require("../models/task");
 
@@ -12,11 +13,15 @@ const companyController = {
     try {
       const company = await Company.findByPk(req.params.id, {
         include: Task,
-        rejectOnEmpty: true,
+        rejectOnEmpty: new CompanyNotFoundError(),
       });
       res.json(company.get({ plain: true }));
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      if (error instanceof CompanyNotFoundError) {
+        res.status(404).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: error.message });
+      }
     }
   },
 
@@ -50,7 +55,7 @@ const companyController = {
       const result = await sequelize.transaction(async (t) => {
         const company = await Company.findByPk(id, {
           transaction: t,
-          rejectOnEmpty: true,
+          rejectOnEmpty: new CompanyNotFoundError(),
         });
         await company.update(companyData, { transaction: t });
 
@@ -74,7 +79,11 @@ const companyController = {
       });
       res.json(result.get({ plain: true }));
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      if (error instanceof CompanyNotFoundError) {
+        res.status(404).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: error.message });
+      }
     }
   },
 };
