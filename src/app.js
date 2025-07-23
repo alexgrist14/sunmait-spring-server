@@ -6,6 +6,7 @@ const authController = require("./controllers/authController");
 const authMiddleware = require("./middleware/authMiddleware");
 const projectController = require("./controllers/projectController");
 const { validateUser } = require("./middleware/validationMiddleware");
+const companyController = require("./controllers/companyController");
 
 const app = express();
 
@@ -26,5 +27,10 @@ app.get(
   authMiddleware.verifyAccessToken,
   projectController.getProjects
 );
+
+app.get("/api/companies", companyController.getAll);
+app.get("/api/companies/:id", companyController.getOne);
+app.post("/api/companies", companyController.create);
+app.patch("/api/companies/:id", companyController.update);
 
 module.exports = app;
